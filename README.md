@@ -4,10 +4,9 @@
 The DocServeApi is a lightweight API impleted with highly optimized framework - falcon api and running on a pypy python interpreter (python's fastest known 
 interpreter). 
 When the API is started, a redis server is also initialized to handle cache. Similarly, the new file is path is stored.
-The file is broken down into many folders each folder with a uniform number of files. By doing this, we are minimizing look up-time for a line in a particular file.
+The file is broken down into many smaller chunks. By doing this, we are minimizing look up-time for a line in a particular file.
 The api goes ahead to to not only cache the response for the requested line but also for the preceding lines because of historical nature of users requesting information that 
-is either closely related or interlinked intermitently.
-To minimize I/O performace, we do not load the entire file into memory but instead split the file into chunks in a binary fashion and access the chunks would highly likely
+is either closely related or interlinked intermitently.To minimize I/O performace, we do not load the entire file into memory but instead split the file into chunks in a binary fashion and access the chunks would highly likely
 contain the line we are looking for. Each of line lookups are threaded and pooled using python's multiprocessing lib.
 
 2. How will your system perform with a 1 GB file? a 10 GB file? a 100 GB file?
@@ -17,17 +16,15 @@ The system will perform at O(nlog(n) with increasing sizes of the file with the 
 The increasing number of users would increase the number of requests hitting the service. At the moment, i’m asynchronously chunking up the a given file while finding the matching file however as requests increase, the number of multithreaded pools due to the CPU will become bottle a bottle neck. 
 
 4. What documentation, websites, papers, etc did you consult in doing this assignment?
-Falcon API, StackOverflow, python.org website, Redis server, python multithreading and multiprocessing
+Falcon API, StackOverflow, python.org website, Redis server, python multithreading and multiprocessing.
 
 5. What third-party libraries or other tools does the system use? How did you choose each library or framework you used?
-I chose the falcon API over using a simple HTTP server, another framework or another interpreter because research had found the combination of optimization of the api and the interpreter to process over 340,000 requests a second or put backwards, it takes 3 ultra-seconds of processing per request, which is not bad for latency for an API.
-
-I started off with the hope of using flask, a well known python API but upon doing research, realized it came with overhead over it’s generic functionality, it would 
+I chose the falcon API over using a simple HTTP server, another framework or another interpreter because research had found the combination of optimization of the api and the interpreter to process over 340,000 requests a second or put backwards, it takes 3 ultra-seconds of processing per request, which is not bad for latency for an API.I started off with the hope of using flask, a well known python API but upon doing research, realized it came with overhead over it’s generic functionality, it would 
 be a bottleneck once we began scaling, as a result, i went with falcon. I also chose to use the redis-server for caching instead of a dictionary because it's a highly
 distributed system that would make saving and retrieving of cached information easier in the event that this increased exponentially
 
 6. How long did you spend on this exercise? If you had unlimited more time to spend on this, how would you spend it and how would you prioritize each item?
-I spent about 5 hours on this piece mainly doing a tonne of planning and research around the anticipated bottlenecks like I/O bound events and CPU events
+I spent about 5 hours on this piece mainly doing a tonne of planning and research around the anticipated bottlenecks like I/O bound events and CPU events.
 I also spent a good majority of the time decoupling many pieces of the code to allow for scalability. 
 I would have derived an equation to give me an optimum number of lines to include in each file and files in folders depending on the length or size of the input file. Despite having to load the entire file into memory, i would have an entire binary tree structure that is O(log(n)) which would make indexing a lot faster. In the same spirit, I would have used some of this time to derive another equation to get an optimum number of threads and processes to be used in I/O bound functions.
 Similarly, i would have had a separate server taking care of configuration with a custom tool like ZooKeeper to make deployments much more manageable.
